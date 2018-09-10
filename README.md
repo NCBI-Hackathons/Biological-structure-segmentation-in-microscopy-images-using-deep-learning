@@ -1,2 +1,2 @@
-# Instance segmentation in Microscopy Images
+# Instance Segmentation in Microscopy Images
 Details to come!
