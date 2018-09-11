@@ -14,7 +14,8 @@
 <h3 id="doi-link">DOI link:</h3>
 <p><img src="https://lh3.googleusercontent.com/DwtFufMw5tSa0h5Ia2S9JG0d6N3Ze3xEj4WcOnc7jPzdYSUrHX0pzmO1gnxUOpUAZEkCPq2X5m9QGQ" alt="examplestichingpostconnectivitymatrix" title="examplestitching"><br>
 <strong>Figure 1.</strong> The stitching of the four regions of interest defined by the MASK-RCNN function.</p>
-<h2 id="website-if-applicable">Website (if applicable)</h2>
+<h2 id="link-to-draft-manuscript">Link to Draft Manuscript</h2>
+<p><a href="https://docs.google.com/document/d/1l9vjg2oHg3uypg-nhxe6AVDYm49LW1GO-yOnhv-GgrQ/edit?usp=sharing">https://docs.google.com/document/d/1l9vjg2oHg3uypg-nhxe6AVDYm49LW1GO-yOnhv-GgrQ/edit?usp=sharing</a></p>
 <h2 id="introduction">Introduction</h2>
 <p>Finetuned convolutional neural networks (CNNs) have been traditionally used in the defense and security industries to classify objects of interest. However, increasingly, shallow CNNs such as AlexNet have already been used in pathology and radiology, namely to determine the malignancy of cancer tumors. Thus, biomedical scientists can readily exploit current networks designed for large-scale object recognition for microscopic biological systems.</p>
 <h2 id="current-challenges">Current Challenges</h2>
