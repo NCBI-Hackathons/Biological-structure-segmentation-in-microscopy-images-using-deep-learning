@@ -12,7 +12,8 @@
   <div class="stackedit__html"><h1 id="instance-microscopy-image-segmentation">Instance Microscopy Image Segmentation</h1>
 <h2 id="icmje-standard-citation">ICMJE Standard Citation:</h2>
 <h3 id="doi-link">DOI link:</h3>
-<p><img src="https://lh3.googleusercontent.com/X_i_IR1ZNqy3ZC1PNOkd9OY_oE0O7WiZ2FuDLULvQMm_PHx2b_rSuuFGiEEJasQz8vDnHaI1Mq4Tyg" alt="Test Training Data of Nuclei in Electron Microscopy Stack Image" title="examplecolorofnuclei"></p>
+<p><img src="https://lh3.googleusercontent.com/DwtFufMw5tSa0h5Ia2S9JG0d6N3Ze3xEj4WcOnc7jPzdYSUrHX0pzmO1gnxUOpUAZEkCPq2X5m9QGQ" alt="examplestichingpostconnectivitymatrix" title="examplestitching"><br>
+<strong>Figure 1.</strong> The stitching of the four regions of interest defined by the MASK-RCNN function.</p>
 <h2 id="website-if-applicable">Website (if applicable)</h2>
 <h2 id="intro-statement">Intro statement</h2>
 <p>Finetuned convolutional neural networks (CNNs) have been traditionally used in the defense and security industries to classify objects of interest. However, increasingly, shallow CNNs such as AlexNet have already been used in pathology and radiology, namely to determine the malignancy of cancer tumors. Thus, biomedical scientists can readily exploit current networks designed for large-scale object recognition for microscopic biological systems.</p>
@@ -25,7 +26,7 @@
 <p><img src="https://lh3.googleusercontent.com/YzIWqKFlvrYmNNssijs3dQbBAXqHvnAvs7fqTzlyfECOMoEXa7LenZt5N0BbH-U0iR81wDl_2CYXAQ" alt="workflowschematicofactualsoftware" title="workflowschematic"><br>
 <strong>Figure 1.</strong> Overview digram of the workflow needed for image segmentation of electron microscopy images.</p>
 <h1 id="how-to-use-this-software">How to use </h1>
-<p>This software is based in Python 3 (Python 3.6) and relies on the TensorFlow library and the scikit-learn and numpy packages. The script can be run in the terminal through the command line or through a preferred IDE such as PyCharm. Ideally, a user could remote into a shared server such as BioWulf and run the program after importing a folder of multiple high-resolution images.</p>
+<p>This software is based in Python 3 (Python 3.6) in Jupyter Notebook and relies on the compressed sparse graph routiness, scikit-learn and numpy packages. Ideally, a user could remote into a shared server such as BioWulf and run the script .py file after importing a folder of multiple high-resolution images.</p>
 <h1 id="software-workflow-diagram">Software Workflow Diagram</h1>
 <p><img src="https://lh3.googleusercontent.com/FybVO5MKiqwcoJQstrgiWAGI57nFibW-9nUDi_nR-Zz5EfyImdYhu-_GW4yCvwYXAL-hpvsxA1sgKA" alt="Software Workflow Diagram for Nuclei Segment" title="exampleworkflowforimprovednucleisegmentation"><br>
 <strong>Figure 2.</strong> Schematic of the steps used in the improved nuclei segmentation software.</p>
