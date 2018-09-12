@@ -11,7 +11,7 @@
 
 ### Link to Draft Manuscript:
 
-"https://docs.google.com/document/d/16iapv26emu_iALUbv2cH5fFvNb-8KMSUNfrpsniqkJk/edit?usp=sharing">https://docs.google.com/document/d/16iapv26emu_iALUbv2cH5fFvNb-8KMSUNfrpsniqkJk/edit?usp=sharing
+https://docs.google.com/document/d/16iapv26emu_iALUbv2cH5fFvNb-8KMSUNfrpsniqkJk/edit?usp=sharing
 
 ## Introduction
 
