@@ -17,10 +17,10 @@ labels = labels_stack[0,:,:]
 # labels, _, _ = skimage.segmentation.relabel_sequential(labels) # Relabel objects
 
 # old way:
-# y_pred = Image.open(path+'/inference-sparce-512/original_cell_inf.tif')
+y_pred = Image.open(path+'/inference-sparce-512/original_cell_inf.tif')
 
 # new way
-y_pred = Image.open(path+'/inference-sparce-512/result_hackathon.tif')
+# y_pred = Image.open(path+'/inference-sparce-512/result_hackathon.tif')
 
 y_pred = np.array(y_pred)
 y_pred, _, _ = skimage.segmentation.relabel_sequential(y_pred) # Relabel objects
