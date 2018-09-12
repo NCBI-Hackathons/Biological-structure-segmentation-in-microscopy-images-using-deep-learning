@@ -11796,12 +11796,33 @@ div#notebook {
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">stitch</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="n">numpix_threshold</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Combine multiple instance segmentations based on overlapping patches into a single</span>
+<span class="sd">    segmentation</span>
+<span class="sd">    </span>
+<span class="sd">    Args</span>
+<span class="sd">    ----</span>
+<span class="sd">        stack : np.ndarray</span>
+<span class="sd">            first two dimensions of stack should be the dimensions of the input image,</span>
+<span class="sd">            and the third dimension be the number of overlapping patches</span>
+<span class="sd">        numpix_threshold : int</span>
+<span class="sd">            a label will be retained in the output only if it has at least </span>
+<span class="sd">            numpix_threshold pixels</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">        result : numpy.ndarray</span>
+<span class="sd">            a 2-D array labels</span>
+<span class="sd">    &#39;&#39;&#39;</span>
     <span class="kn">from</span> <span class="nn">scipy.sparse.csgraph</span> <span class="k">import</span> <span class="n">csgraph_from_dense</span><span class="p">,</span> <span class="n">connected_components</span>
+    
+    <span class="c1"># find foreground labels</span>
     <span class="n">nonzero_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
     
-    <span class="c1"># get unique label combinations across stacks</span>
+    <span class="c1"># get unique label combinations across patches in stack</span>
     <span class="n">labels_to_combine</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">stack</span><span class="p">[</span><span class="n">nonzero_idx</span><span class="p">],</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     
+    <span class="c1"># compute a &quot;connectivity matrix&quot; that indicates which labels overlap across patches</span>
     <span class="n">conn_mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">labels_to_combine</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">labels_to_combine</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;bool&#39;</span><span class="p">)</span>
     
     <span class="k">for</span> <span class="n">row</span><span class="p">,</span> <span class="n">label_combo</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">labels_to_combine</span><span class="p">):</span>
@@ -11811,38 +11832,61 @@ div#notebook {
                 <span class="n">conn_mat</span><span class="p">[</span><span class="n">group</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">group</span><span class="p">[</span><span class="n">j</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">True</span>
                 <span class="n">conn_mat</span><span class="p">[</span><span class="n">group</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">group</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">True</span>
 
-    <span class="n">np</span><span class="o">.</span><span class="n">fill_diagonal</span><span class="p">(</span><span class="n">conn_mat</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="c1">#np.fill_diagonal(conn_mat, True)</span>
     
+    <span class="c1"># find connected components using this connectivity matrix</span>
+    <span class="c1"># each connected component will be a different label in the result (as long as it</span>
+    <span class="c1"># contains the minimum required number of pixels)</span>
     <span class="n">graph</span> <span class="o">=</span> <span class="n">csgraph_from_dense</span><span class="p">(</span><span class="n">conn_mat</span><span class="p">)</span>
-    
     <span class="n">n_conncomp</span><span class="p">,</span> <span class="n">graph_complabels</span> <span class="o">=</span> <span class="n">connected_components</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">directed</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
     
     <span class="n">result</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">stack</span><span class="p">[:,:,</span><span class="mi">0</span><span class="p">])</span>
     
+    <span class="c1"># reassign labels to the ids of the connected components</span>
     <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">stack</span><span class="p">):</span>
+        <span class="c1"># get 2-D mask of voxels with a given label</span>
         <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">stack</span><span class="o">==</span><span class="n">label</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        
+        <span class="c1"># make sure that there are enough many pixels</span>
         <span class="k">if</span> <span class="n">mask</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">numpix_threshold</span><span class="p">:</span>
+            <span class="c1"># if so, reassign this label to its corresponding connected component id</span>
             <span class="n">result</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">stack</span><span class="o">==</span><span class="n">label</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)]</span> <span class="o">=</span> <span class="n">graph_complabels</span><span class="p">[</span><span class="n">label</span><span class="p">]</span>
     
     <span class="k">return</span> <span class="n">result</span>
 
 
 <span class="k">def</span> <span class="nf">stitch_sparse</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="n">numpix_threshold</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Combine multiple instance segmentations based on overlapping patches into a single</span>
+<span class="sd">    segmentation. This implementation uses a sparse instead of a dense connectivity matrix,</span>
+<span class="sd">    so could be helpful if there is a large number of objects being segmented.</span>
+<span class="sd">    </span>
+<span class="sd">    Args</span>
+<span class="sd">    ----</span>
+<span class="sd">        stack : numpy.ndarray</span>
+<span class="sd">            first two dimensions of stack should be the dimensions of the input image,</span>
+<span class="sd">            and the third dimension be the number of overlapping patches</span>
+<span class="sd">        numpix_threshold : int</span>
+<span class="sd">            a label will be retained in the output only if it has at least </span>
+<span class="sd">            numpix_threshold pixels</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">        result : numpy.ndarray</span>
+<span class="sd">            a 2-D array labels</span>
+<span class="sd">    &#39;&#39;&#39;</span>
     <span class="kn">from</span> <span class="nn">scipy.sparse</span> <span class="k">import</span> <span class="n">csr_matrix</span>
     <span class="kn">from</span> <span class="nn">scipy.sparse.csgraph</span> <span class="k">import</span> <span class="n">connected_components</span>
     
-    <span class="c1"># get unique label combinations across stacks</span>
+    <span class="c1"># get label combinations across stacks</span>
     <span class="n">nonzero_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
     <span class="n">labels_to_combine</span> <span class="o">=</span> <span class="n">stack</span><span class="p">[</span><span class="n">nonzero_idx</span><span class="p">]</span>  
     
+    <span class="c1"># keep track of the number of times a label combination occurs</span>
     <span class="n">combo_dict</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">row</span><span class="p">,</span> <span class="n">label_combo</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">labels_to_combine</span><span class="p">):</span>
-        <span class="n">group</span> <span class="o">=</span> <span class="n">label_combo</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">label_combo</span><span class="p">)]</span> <span class="c1"># this should already be sorted</span>
+        <span class="n">group</span> <span class="o">=</span> <span class="n">label_combo</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">label_combo</span><span class="p">)]</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">group</span><span class="p">)):</span>
-            <span class="c1">#if (group[i], group[i]) in combo_dict:</span>
-            <span class="c1">#    combo_dict[(group[i], group[i])] += 1</span>
-            <span class="c1">#else:</span>
-            <span class="c1">#    combo_dict[(group[i], group[i])] = 1</span>
             <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">group</span><span class="p">)):</span>
                 <span class="k">if</span> <span class="p">(</span><span class="n">group</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">group</span><span class="p">[</span><span class="n">j</span><span class="p">])</span> <span class="ow">in</span> <span class="n">combo_dict</span><span class="p">:</span>
                     <span class="n">combo_dict</span><span class="p">[(</span><span class="n">group</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">group</span><span class="p">[</span><span class="n">j</span><span class="p">])]</span> <span class="o">+=</span> <span class="mi">1</span>
@@ -11862,6 +11906,38 @@ div#notebook {
         <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">stack</span><span class="o">==</span><span class="n">label</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">mask</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">numpix_threshold</span><span class="p">:</span>
             <span class="n">result</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">stack</span><span class="o">==</span><span class="n">label</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)]</span> <span class="o">=</span> <span class="n">graph_complabels</span><span class="p">[</span><span class="n">label</span><span class="p">]</span>
+    
+    <span class="k">return</span> <span class="n">result</span>
+
+<span class="k">def</span> <span class="nf">fix_euler_numbers</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">max_hole_size</span><span class="o">=</span><span class="mi">999</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Fix labels whose Euler numbers are not 1 (i.e., labels with holes or handles)</span>
+<span class="sd">    </span>
+<span class="sd">    Args</span>
+<span class="sd">    ----</span>
+<span class="sd">        result : numpy.ndarray</span>
+<span class="sd">            2-D integer array of labeled objects</span>
+<span class="sd">        max_hole_size : max number of pixels to fill</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">        result : numpy.ndarray</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="kn">from</span> <span class="nn">skimage.measure</span> <span class="k">import</span> <span class="n">regionprops</span>
+    <span class="kn">from</span> <span class="nn">skimage.morphology</span> <span class="k">import</span> <span class="n">remove_small_holes</span>
+    
+    <span class="c1"># use skimage&#39;s regionprops to get the Euler number for each object</span>
+    <span class="n">props</span> <span class="o">=</span> <span class="n">regionprops</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+    <span class="n">labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">roi</span><span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">roi</span> <span class="ow">in</span> <span class="n">props</span><span class="p">])</span>
+    <span class="n">euler_numbers</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">roi</span><span class="p">[</span><span class="s1">&#39;euler_number&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">roi</span> <span class="ow">in</span> <span class="n">props</span><span class="p">])</span>
+    
+    <span class="k">for</span> <span class="n">bad_label</span> <span class="ow">in</span> <span class="n">labels</span><span class="p">[</span><span class="n">euler_numbers</span><span class="o">!=</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">remove_small_holes</span><span class="p">(</span><span class="n">result</span><span class="o">==</span><span class="n">bad_label</span><span class="p">,</span> <span class="n">area_threshold</span><span class="o">=</span><span class="n">max_hole_size</span><span class="p">)</span>
+        
+        <span class="c1"># if there are other labels that intersect with the holes that were filled,</span>
+        <span class="c1"># then those other labels will be removed from the image</span>
+        <span class="n">result</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">result</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">setdiff1d</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="n">mask</span><span class="p">]),[</span><span class="mi">0</span><span class="p">,</span> <span class="n">bad_label</span><span class="p">]))]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">result</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">bad_label</span>
     
     <span class="k">return</span> <span class="n">result</span>
 </pre></div>
@@ -11901,6 +11977,38 @@ div#notebook {
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">result</span> <span class="o">=</span> <span class="n">stitch</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="n">numpix_threshold</span><span class="o">=</span><span class="n">npix</span><span class="p">)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">fix_euler_numbers</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt"></div>
+
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>/Users/bilgelm/anaconda/envs/python3.6/lib/python3.6/importlib/_bootstrap.py:219: RuntimeWarning: numpy.dtype size changed, may indicate binary incompatibility. Expected 96, got 88
+  return f(*args, **kwds)
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[5]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">result_sparse</span> <span class="o">=</span> <span class="n">stitch_sparse</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="n">numpix_threshold</span><span class="o">=</span><span class="n">npix</span><span class="p">)</span>
+<span class="n">result_sparse</span> <span class="o">=</span> <span class="n">fix_euler_numbers</span><span class="p">(</span><span class="n">result_sparse</span><span class="p">)</span>
 </pre></div>
 
 </div>
@@ -11911,19 +12019,6 @@ div#notebook {
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
 <div class="prompt input_prompt">In&nbsp;[6]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">result_sparse</span> <span class="o">=</span> <span class="n">stitch_sparse</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="n">numpix_threshold</span><span class="o">=</span><span class="n">npix</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[7]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">Image</span><span class="o">.</span><span class="n">fromarray</span><span class="p">(</span><span class="n">result</span><span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">&#39;../inference-sparce-512/result_hackathon.tif&#39;</span><span class="p">)</span>
@@ -11946,7 +12041,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[13]:</div>
+<div class="prompt input_prompt">In&nbsp;[7]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">stack</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;../inference-dense-512/inference-stack.npy&#39;</span><span class="p">)</span>
@@ -11962,10 +12057,11 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[14]:</div>
+<div class="prompt input_prompt">In&nbsp;[8]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">result</span> <span class="o">=</span> <span class="n">stitch</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="n">numpix_threshold</span><span class="o">=</span><span class="n">npix</span><span class="p">)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">fix_euler_numbers</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
 </pre></div>
 
 </div>
@@ -11975,24 +12071,10 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[15]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">result_sparse</span> <span class="o">=</span> <span class="n">stitch_sparse</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="n">numpix_threshold</span><span class="o">=</span><span class="n">npix</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[16]:</div>
+<div class="prompt input_prompt">In&nbsp;[9]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">Image</span><span class="o">.</span><span class="n">fromarray</span><span class="p">(</span><span class="n">result</span><span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">&#39;../inference-dense-512/result_hackathon.tif&#39;</span><span class="p">)</span>
-<span class="n">Image</span><span class="o">.</span><span class="n">fromarray</span><span class="p">(</span><span class="n">result_sparse</span><span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">&#39;../inference-dense-512/result_sparse_hackathon.tif&#39;</span><span class="p">)</span>
 </pre></div>
 
 </div>
@@ -12011,7 +12093,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[17]:</div>
+<div class="prompt input_prompt">In&nbsp;[10]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">stack</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;../inference-dense-512/inference-bigger-cell-after-flipping.npy&#39;</span><span class="p">)</span>
@@ -12027,10 +12109,11 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[18]:</div>
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">result</span> <span class="o">=</span> <span class="n">stitch</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="n">numpix_threshold</span><span class="o">=</span><span class="n">npix</span><span class="p">)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">fix_euler_numbers</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
 </pre></div>
 
 </div>
@@ -12040,24 +12123,10 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[19]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">result_sparse</span> <span class="o">=</span> <span class="n">stitch_sparse</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="n">numpix_threshold</span><span class="o">=</span><span class="n">npix</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[20]:</div>
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">Image</span><span class="o">.</span><span class="n">fromarray</span><span class="p">(</span><span class="n">result</span><span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">&#39;../inference-dense-512/result_flipped_hackathon.tif&#39;</span><span class="p">)</span>
-<span class="n">Image</span><span class="o">.</span><span class="n">fromarray</span><span class="p">(</span><span class="n">result_sparse</span><span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">&#39;../inference-dense-512/result_flipped_sparse_hackathon.tif&#39;</span><span class="p">)</span>
 </pre></div>
 
 </div>
@@ -12103,19 +12172,7 @@ div#notebook {
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">result</span> <span class="o">=</span> <span class="n">stitch</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="n">numpix_threshold</span><span class="o">=</span><span class="n">npix</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[28]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">result_sparse</span> <span class="o">=</span> <span class="n">stitch_sparse</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="n">numpix_threshold</span><span class="o">=</span><span class="n">npix</span><span class="p">)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">fix_euler_numbers</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
 </pre></div>
 
 </div>
@@ -12129,7 +12186,6 @@ div#notebook {
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">Image</span><span class="o">.</span><span class="n">fromarray</span><span class="p">(</span><span class="n">result</span><span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">&#39;../inference-dense-512/result_both_hackathon.tif&#39;</span><span class="p">)</span>
-<span class="n">Image</span><span class="o">.</span><span class="n">fromarray</span><span class="p">(</span><span class="n">result_sparse</span><span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">&#39;../inference-dense-512/result_both_sparse_hackathon.tif&#39;</span><span class="p">)</span>
 </pre></div>
 
 </div>
