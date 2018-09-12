@@ -162,7 +162,7 @@ Image.fromarray(result_sparse).save('../inference-dense-512/result_flipped_spars
 
 # # inference-dense-512 using both
 
-# In[21]:
+# In[26]:
 
 stack = np.load('../inference-dense-512/inference-stack.npy')
 stack = stack[:,:,1:]
@@ -170,22 +170,24 @@ stack = stack[:,:,1:]
 stack_flipped = np.load('../inference-dense-512/inference-bigger-cell-after-flipping.npy')
 stack_flipped = stack_flipped[:,:,1:]
 
+stack_flipped[stack_flipped>0] += stack.max() # ensure that IDs are different 
+
 stack = np.concatenate((stack,stack_flipped), axis=2)
 
 npix = 10
 
 
-# In[ ]:
+# In[27]:
 
 result = stitch(stack, numpix_threshold=npix)
 
 
-# In[ ]:
+# In[28]:
 
 result_sparse = stitch_sparse(stack, numpix_threshold=npix)
 
 
-# In[ ]:
+# In[29]:
 
 Image.fromarray(result).save('../inference-dense-512/result_both_hackathon.tif')
 Image.fromarray(result_sparse).save('../inference-dense-512/result_both_sparse_hackathon.tif')

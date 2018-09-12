@@ -12076,7 +12076,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[21]:</div>
+<div class="prompt input_prompt">In&nbsp;[26]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">stack</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;../inference-dense-512/inference-stack.npy&#39;</span><span class="p">)</span>
@@ -12084,6 +12084,8 @@ div#notebook {
 
 <span class="n">stack_flipped</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;../inference-dense-512/inference-bigger-cell-after-flipping.npy&#39;</span><span class="p">)</span>
 <span class="n">stack_flipped</span> <span class="o">=</span> <span class="n">stack_flipped</span><span class="p">[:,:,</span><span class="mi">1</span><span class="p">:]</span>
+
+<span class="n">stack_flipped</span><span class="p">[</span><span class="n">stack_flipped</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">]</span> <span class="o">+=</span> <span class="n">stack</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="c1"># ensure that IDs are different </span>
 
 <span class="n">stack</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">stack</span><span class="p">,</span><span class="n">stack_flipped</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 
@@ -12097,7 +12099,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="prompt input_prompt">In&nbsp;[27]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">result</span> <span class="o">=</span> <span class="n">stitch</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="n">numpix_threshold</span><span class="o">=</span><span class="n">npix</span><span class="p">)</span>
@@ -12110,7 +12112,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="prompt input_prompt">In&nbsp;[28]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">result_sparse</span> <span class="o">=</span> <span class="n">stitch_sparse</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="n">numpix_threshold</span><span class="o">=</span><span class="n">npix</span><span class="p">)</span>
@@ -12123,7 +12125,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="prompt input_prompt">In&nbsp;[29]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">Image</span><span class="o">.</span><span class="n">fromarray</span><span class="p">(</span><span class="n">result</span><span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">&#39;../inference-dense-512/result_both_hackathon.tif&#39;</span><span class="p">)</span>
