@@ -134,7 +134,8 @@ def fix_euler_numbers(result, max_hole_size=999):
     ----
         result : numpy.ndarray
             2-D integer array of labeled objects
-        max_hole_size : max number of pixels to fill
+        max_hole_size : int
+            max number of pixels to fill
     
     Returns
     -------
@@ -157,6 +158,27 @@ def fix_euler_numbers(result, max_hole_size=999):
         result[mask] = bad_label
     
     return result
+
+def split_large_objects(result, stack):
+    '''
+    Detect objects that are too large
+    Determine whether these are actually single or multiple objects
+    If multiple objects, manipulate labels accordingly
+    
+    Args
+    ----
+        result : numpy.ndarray
+            2-D integer array of labeled objects
+        stack : np.ndarray
+            stack that was used to generate result
+            first two dimensions of stack should be the dimensions of the input image,
+            and the third dimension be the number of overlapping patches
+    
+    Returns
+    -------
+        result : numpy.ndarray
+    '''
+    pass
 
 
 # # inference-sparce-512
@@ -217,20 +239,20 @@ stack = stack[:,:,1:]
 npix = 10
 
 
-# In[ ]:
+# In[11]:
 
 result = stitch(stack, numpix_threshold=npix)
 result = fix_euler_numbers(result)
 
 
-# In[ ]:
+# In[12]:
 
 Image.fromarray(result).save('../inference-dense-512/result_flipped_hackathon.tif')
 
 
 # # inference-dense-512 using both
 
-# In[26]:
+# In[13]:
 
 stack = np.load('../inference-dense-512/inference-stack.npy')
 stack = stack[:,:,1:]
@@ -245,13 +267,13 @@ stack = np.concatenate((stack,stack_flipped), axis=2)
 npix = 10
 
 
-# In[27]:
+# In[14]:
 
 result = stitch(stack, numpix_threshold=npix)
 result = fix_euler_numbers(result)
 
 
-# In[29]:
+# In[15]:
 
 Image.fromarray(result).save('../inference-dense-512/result_both_hackathon.tif')
 

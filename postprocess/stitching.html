@@ -11917,7 +11917,8 @@ div#notebook {
 <span class="sd">    ----</span>
 <span class="sd">        result : numpy.ndarray</span>
 <span class="sd">            2-D integer array of labeled objects</span>
-<span class="sd">        max_hole_size : max number of pixels to fill</span>
+<span class="sd">        max_hole_size : int</span>
+<span class="sd">            max number of pixels to fill</span>
 <span class="sd">    </span>
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -11940,6 +11941,27 @@ div#notebook {
         <span class="n">result</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">bad_label</span>
     
     <span class="k">return</span> <span class="n">result</span>
+
+<span class="k">def</span> <span class="nf">split_large_objects</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">stack</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Detect objects that are too large</span>
+<span class="sd">    Determine whether these are actually single or multiple objects</span>
+<span class="sd">    If multiple objects, manipulate labels accordingly</span>
+<span class="sd">    </span>
+<span class="sd">    Args</span>
+<span class="sd">    ----</span>
+<span class="sd">        result : numpy.ndarray</span>
+<span class="sd">            2-D integer array of labeled objects</span>
+<span class="sd">        stack : np.ndarray</span>
+<span class="sd">            stack that was used to generate result</span>
+<span class="sd">            first two dimensions of stack should be the dimensions of the input image,</span>
+<span class="sd">            and the third dimension be the number of overlapping patches</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">        result : numpy.ndarray</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">pass</span>
 </pre></div>
 
 </div>
@@ -12109,7 +12131,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="prompt input_prompt">In&nbsp;[11]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">result</span> <span class="o">=</span> <span class="n">stitch</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="n">numpix_threshold</span><span class="o">=</span><span class="n">npix</span><span class="p">)</span>
@@ -12123,7 +12145,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="prompt input_prompt">In&nbsp;[12]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">Image</span><span class="o">.</span><span class="n">fromarray</span><span class="p">(</span><span class="n">result</span><span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">&#39;../inference-dense-512/result_flipped_hackathon.tif&#39;</span><span class="p">)</span>
@@ -12145,7 +12167,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[26]:</div>
+<div class="prompt input_prompt">In&nbsp;[13]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">stack</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;../inference-dense-512/inference-stack.npy&#39;</span><span class="p">)</span>
@@ -12168,7 +12190,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[27]:</div>
+<div class="prompt input_prompt">In&nbsp;[14]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">result</span> <span class="o">=</span> <span class="n">stitch</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="n">numpix_threshold</span><span class="o">=</span><span class="n">npix</span><span class="p">)</span>
@@ -12182,7 +12204,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[29]:</div>
+<div class="prompt input_prompt">In&nbsp;[15]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">Image</span><span class="o">.</span><span class="n">fromarray</span><span class="p">(</span><span class="n">result</span><span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">&#39;../inference-dense-512/result_both_hackathon.tif&#39;</span><span class="p">)</span>
